@@ -17,7 +17,7 @@ class CreateBlogsTable extends Migration
             $table->id();
             $table->string('judul')->nullable();
             $table->string('cover')->nullable();
-            $table->string('konten')->nullable();
+            $table->text('konten')->nullable();
             $table->integer('jumlah_like')->nullable();
 
             $table->string('avatar_penulis')->nullable();

@@ -19,3 +19,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('/v1/blogs/all','BlogController@index')->middleware('cors');
+Route::get('/v1/tweets/all','TweetController@index')->middleware('cors');
