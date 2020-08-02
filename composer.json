@@ -52,7 +52,6 @@
     "scripts": {
         "post-install-cmd": [
             "php artisan clear-compiled",
-            "composer install",
             "chmod -R 777 public/",
             "chmod -R 777 storage",
             "php artisan migrate:refresh",
