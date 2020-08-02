@@ -18,7 +18,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'username', 'email', 'password',
+        'username', 'email', 'password', 'avatar'
     ];
 
     /**
@@ -45,7 +45,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Tweet::class);
     }
-    public function AauthAcessToken(){
+    public function AauthAcessToken()
+    {
         return $this->hasMany('\App\OauthAccessToken');
     }
 }
