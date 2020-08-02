@@ -18,5 +18,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/v1/blogs/all','BlogController@index')->middleware('cors');
-Route::get('/v1/tweets/all','TweetController@index')->middleware('cors');
+Route::post('/login', 'UserController@login')->name('login');
+Route::post('/register', 'UserController@register')->name('register');
+Route::post('/logout', 'UserController@logout')->name('logout')->middleware('auth:api');
+
+Route::group(['prefix' => 'v1'], function () {
+    Route::get('/blogs/all', 'BlogController@index')->middleware('cors');
+
+    // tweets
+    Route::group(['prefix' => 'tweets'], function () {
+        Route::get('/all', 'TweetController@index')->middleware('cors');
+        Route::post('/create', 'TweetController@create')->middleware(['auth:api', 'cors']);
+        Route::put('/update/{id}', 'TweetController@update')->middleware(['auth:api', 'cors']);
+        Route::delete('/delete/{id}', 'TweetController@destroy')->middleware(['auth:api', 'cors']);
+    });
+});
