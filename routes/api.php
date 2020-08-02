@@ -18,11 +18,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/login', 'UserController@login')->name('login');
-Route::post('/register', 'UserController@register')->name('register');
-Route::post('/logout', 'UserController@logout')->name('logout')->middleware('auth:api');
 
 Route::group(['prefix' => 'v1'], function () {
+    Route::post('/login', 'UserController@login')->name('login');
+    Route::post('/register', 'UserController@register')->name('register');
+    Route::post('/logout', 'UserController@logout')->name('logout')->middleware('auth:api');
+
     Route::get('/blogs/all', 'BlogController@index')->middleware('cors');
 
     // tweets
