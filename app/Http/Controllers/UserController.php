@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Tweet;
 use App\User;
 use Validator;
 use Faker\Generator as Faker;
@@ -10,6 +11,21 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    /**
+     * 
+     * SHOW TWEET BY USER ID ON LOGIN
+     * @return user with tweet
+     */
+    public function dashboard(Tweet $tweet)
+    {
+        $auth_id = Auth::id();
+        $auth_user_tweet = User::where('id', '=', $auth_id)->with(['tweets' => function ($query) {
+            return $query->orderBy('created_at', 'desc')->get();
+        }])->first();
+        return apiReturn($auth_user_tweet, 'mendapatkan data user dan tweet');
+    }
+
+
     public function login(Request $request)
     {
         $credential = $request->only(['email', 'password']);
@@ -24,7 +40,7 @@ class UserController extends Controller
                 'credential' => $success
             ]);
         } else {
-            return response()->json(['error' => 'Unauthorised'], 401);
+            return apiUnauthorized('gagal login');
         }
     }
     public function logout(Request $request)
@@ -40,12 +56,7 @@ class UserController extends Controller
                 'credential' => $user
             ]);
         } else {
-            return response()->json([
-                'succes' => false,
-                'status' => "failed",
-                'status_code' => 400,
-                'message' => 'kami tidak mengenali anda'
-            ]);
+            return apiFailed([], 'gagal logout');
         }
     }
     public function register(Request $request, Faker $faker)
@@ -55,16 +66,12 @@ class UserController extends Controller
             'password' => 'required'
         ]);
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            $errors = $validator->errors();
+            return apiValidate($errors);;
         }
         $check = User::where('email', '=', $request->email)->first();
         if ($check) {
-            return response()->json([
-                'success' => false,
-                'status_code' => 400,
-                'status' => 'failed',
-                'message' => 'email sudah digunakan'
-            ]);
+            return apiFailed([], 'email sudah digunakan');
         }
         $vector_avatar = [
             'https://semantic-ui.com/images/avatar2/large/elyse.png',

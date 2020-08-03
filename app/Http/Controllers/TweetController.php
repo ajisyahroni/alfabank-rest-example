@@ -18,13 +18,12 @@ class TweetController extends Controller
      */
     public function index()
     {
-        $data = Tweet::with('user')->orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'status_code' => 200,
-            'status' => 'OK',
-            'message' => 'menampilkan data tweet',
-            'data' => $data
-        ]);
+        try {
+            $tweets_users = Tweet::with('user')->orderBy('created_at', 'desc')->get();
+            return apiReturn($tweets_users, 'menampilkan data tweet');
+        } catch (\Throwable $th) {
+            return apiCatch();
+        }
     }
 
     /**
@@ -36,55 +35,26 @@ class TweetController extends Controller
     {
         try {
             $user_id = Auth::id();
+            $validator = Validator::make($request->all(), [
+                'tweet' => 'required'
+            ]);
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                return apiValidate($errors);
+            }
+
             $inserted_tweet = Tweet::create([
                 'user_id' => $user_id,
                 'tweet' => $request->tweet,
                 'time' => Carbon::now()->diffForHumans()
             ]);
-            return response()->json([
-                'succes' => true,
-                'status_code' => 201,
-                'message' => 'berhasil',
-                'user_id' => $user_id,
-                'data' => $inserted_tweet
-            ]);
+            return apiCreated($inserted_tweet, 'berhasil membuat tweet');
         } catch (\Throwable $th) {
-            return response()->json(['success' => false, 'message' => 'gagal', 'error' => $th]);
+            return apiCatch();
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Tweet  $tweet
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Tweet $tweet)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Tweet  $tweet
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Tweet $tweet)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -102,34 +72,18 @@ class TweetController extends Controller
                     'tweet' => 'required'
                 ]);
                 if ($validator->fails()) {
-                    return response()->json(['error' => $validator->errors()], 401);
+                    $errors = $validator->errors();
+                    return apiValidate($errors);
                 }
 
                 $tweet->tweet = $request->tweet;
                 $tweet->save();
-                return response()->json([
-                    'success' => true,
-                    'status' => 'OK',
-                    'status_code' => 200,
-                    'message' => 'berhasil mengupdate data tweet',
-                    'data' => $tweet
-                ]);
+                return apiReturn($tweet, 'berhasil update tweet');
             } else {
-                return response()->json([
-                    'success' => false,
-                    'status' => 'failed',
-                    'status_code' => 400,
-                    'message' => 'gagal, anda mengupdate tweet user lain',
-                    'data' => $tweet
-                ]);
+                return apiFailed($tweet, 'gagal, anda mencoba mengupdate tweet user lain');
             }
         } else {
-            return response()->json([
-                'success' => false,
-                'status' => 'failed',
-                'status_code' => 400,
-                'message' => 'tweet yang kamu cari enggak ada',
-            ]);
+            return apiFailed([], 'tweet yang kamu cari tidak ada');
         }
     }
 
@@ -145,29 +99,12 @@ class TweetController extends Controller
         if ($tweet) {
             if ($tweet->user_id == Auth::id()) {
                 $tweet->delete();
-                return response()->json([
-                    'success' => true,
-                    'status' => 'OK',
-                    'status_code' => 200,
-                    'message' => 'berhasil menghapus data tweet',
-                    'data' => $tweet
-                ]);
+                return apiReturn($tweet, 'berhasil menghapus tweet anda');
             } else {
-                return response()->json([
-                    'success' => false,
-                    'status' => 'failed',
-                    'status_code' => 400,
-                    'message' => 'gagal, anda menghapus tweet user lain',
-                    'data' => $tweet
-                ]);
+                return  apiFailed($tweet, 'gagal, anda mencoba menghapus tweet user lain');
             }
         } else {
-            return response()->json([
-                'success' => false,
-                'status' => 'failed',
-                'status_code' => 400,
-                'message' => 'tweet yang kamu cari enggak ada',
-            ]);
+            return apiFailed([], 'tweet yang kamu cari tidak ada');
         }
     }
 }

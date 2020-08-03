@@ -24,10 +24,15 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('/register', 'UserController@register')->name('register');
     Route::post('/logout', 'UserController@logout')->name('logout')->middleware('auth:api');
 
+    // blogs
     Route::get('/blogs/all', 'BlogController@index')->middleware('cors');
 
     // tweets
     Route::group(['prefix' => 'tweets'], function () {
+
+        // dashboard
+        Route::get('/dashboard', 'UserController@dashboard')->middleware('auth:api');
+        
         Route::get('/all', 'TweetController@index')->middleware('cors');
         Route::post('/create', 'TweetController@create')->middleware(['auth:api', 'cors']);
         Route::put('/update/{id}', 'TweetController@update')->middleware(['auth:api', 'cors']);
